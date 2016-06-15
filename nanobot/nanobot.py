@@ -115,10 +115,6 @@ class Nanobot(object):
       # probably 'in_reply-to_status_id' when we're replying to someone.)
       self.tweets = []
 
-      # !!! DELETE here, keep in derived
-      defaultSettings = kDefaultConfigDict
-      defaultSettings.update(self.GetDefaultConfigOptions())
-      self.settings = Settings(self.GetPath("tmbotg.json"), defaultSettings)
 
 
 
@@ -310,6 +306,17 @@ class Nanobot(object):
 
 
    def Run(self):
+
+      # load the settings file.
+      # If one doesn't exist, we create one that's populated with 
+      # defaults, print a message to the console telling the user to
+      # edit the file with correct values, and
+      # exit.
+      defaultSettings = kDefaultConfigDict.copy()
+      defaultSettings.update(self.GetDefaultConfigOptions())
+      self.settings = Settings(self.GetPath("{}.json".format(self.botName)), 
+         defaultSettings)
+
       # create the Twython object that's going to communicate with the
       # twitter API.
       s = self.settings
@@ -394,8 +401,16 @@ def GetBotArguments(argAdder=None):
 
    # Find the path where this source file is being loaded from -- we use
    # this when resolving relative paths (e.g., to the data/ directory)
-   botPath = os.path.abspath(os.path.dirname(sys.argv[0]))
+   mainSourceFile = sys.argv[0]
+   botPath = os.path.abspath(os.path.dirname(mainSourceFile))
    argDict['botPath'] = botPath
+
+   # By default, the name of this bot (as used to load the settings file, etc)
+   # is taken from the name of the source file that launched us.
+   _, fname = os.path.split(mainSourceFile)
+   botName, _ = os.path.splitext(fname)
+   argDict['botName'] = botName
+   
 
    return argDict
 
