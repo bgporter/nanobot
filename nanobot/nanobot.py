@@ -338,10 +338,10 @@ class Nanobot(object):
 
       # create the Twython object that's going to communicate with the
       # twitter API.
-      appKey = settings.appKey
-      appsecret = settings.appSecret
-      accesstoken = settings.accessToken
-      accessTokenSecret = settings.accessTokenSecret
+      appKey = self.settings.appKey
+      appsecret = self.settings.appSecret
+      accesstoken = self.settings.accessToken
+      accessTokenSecret = self.settings.accessTokenSecret
       if self.stream:
          self.twitter = NanobotStreamer(appKey, appSecret, accessToken, accessTokenSecret)
          self.twitter.SetOutputPath(self.botPath)
