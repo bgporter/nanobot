@@ -310,6 +310,15 @@ class Nanobot(object):
 
 
 
+   def LoadSettings(self):
+      # load the settings file.
+      # If one doesn't exist, we create one that's populated with 
+      # defaults, print a message to the console telling the user to
+      # edit the file with correct values, and  exit.
+      defaultSettings = kDefaultConfigDict.copy()
+      defaultSettings.update(self.GetDefaultConfigOptions())
+      self.settings = Settings(self.GetPath("{}.json".format(self.botName)), 
+         defaultSettings)
 
    def Run(self):
       '''
@@ -326,15 +335,8 @@ class Nanobot(object):
                - send tweets out
          - (let your derived bot class clean up)
       '''
+      self.LoadSettings()
 
-      # load the settings file.
-      # If one doesn't exist, we create one that's populated with 
-      # defaults, print a message to the console telling the user to
-      # edit the file with correct values, and  exit.
-      defaultSettings = kDefaultConfigDict.copy()
-      defaultSettings.update(self.GetDefaultConfigOptions())
-      self.settings = Settings(self.GetPath("{}.json".format(self.botName)), 
-         defaultSettings)
 
       # create the Twython object that's going to communicate with the
       # twitter API.
