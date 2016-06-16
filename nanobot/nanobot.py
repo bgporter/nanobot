@@ -118,7 +118,10 @@ class Nanobot(object):
 
 
 
-
+   ##
+   ## Methods That Your Bot Might Wish To Override
+   ##
+   
    def GetDefaultConfigOptions(self):
       ''' 
          Override this in your derived class if you'd like to ensure that
@@ -126,6 +129,78 @@ class Nanobot(object):
          settings file for a user to edit by hand as needed.
       '''
       return {}
+
+   def IsReadyForUpdate(self):
+      ''' Check to see if we should be generating a tweet this time.
+         Defaults to the built-in logic where we prevent tweets happening
+         too closely together or too far apart, and this can be overridden 
+         if self.force is True.
+
+         Derived classes are free to create their own version of this method.
+      '''
+      doUpdate = self.force
+      last = self.settings.lastUpdate or 0
+      now = int(time())
+      lastTweetAge = now - last
+
+      # default to creating a tweet at *least* every 4 hours.
+      maxSpace = self.settings.GetOrDefault("maximumSpacing", 4 * 60 * 60)
+
+      if lastTweetAge > maxSpace:
+         # been too long since the last tweet. Make a new one for our fans!
+         doUpdate = True
+
+      elif random() < self.settings.tweetProbability:
+         # Make sure that we're not tweeting too frequently. Default is to enforce 
+         # a 1-hour gap between tweets (configurable using the 'minimumSpacing' key
+         # in the config file, providing a number of minutes we must remain silent.)
+         requiredSpace = self.settings.GetOrDefault("minimumSpacing",  60*60)
+
+         if lastTweetAge > requiredSpace:
+            # Our last tweet was a while ago, let's make another one.
+            doUpdate = True
+
+      return doUpdate
+
+
+
+   def CreateUpdateTweet(self):
+      ''' Override this method in your derived bot class. '''
+      pass
+
+   def HandleOneMention(self, mention):
+      ''' should be overridden by derived classes. Base version 
+      likes any tweet that mentions us.
+      '''
+      who = mention['user']['screen_name']
+      text = mention['text']
+      theId = mention['id_str']
+
+      # we favorite every mention that we see
+      if self.debug:
+         print "Faving tweet {0} by {1}:\n {2}".format(theId, who, text.encode("utf-8"))
+      else:
+         self.twitter.create_favorite(id=theId)
+
+   def PreRun(self):
+      ''' 
+         override in derived class to perform any actions that need
+         to happen before the body of the Run() method.
+      '''
+      pass
+
+   def PostRun(self):
+      ''' 
+         override in derived class to perform any actions that need
+         to happen after the body of the Run() method.
+      '''
+      pass
+
+
+
+   ##
+   ## Methods That Your Bot Probably Won't Want To Override
+   ## 
 
    def GetPath(self, path):
       '''
@@ -175,50 +250,12 @@ class Nanobot(object):
             self.twitter.update_status(**msg)
 
 
-   def IsReadyForUpdate(self):
-      ''' Check to see if we should be generating a tweet this time.
-         Defaults to the built-in logic where we prevent tweets happening
-         too closely together or too far apart, and this can be overridden 
-         if self.force is True.
-
-         Derived classes are free to create their own version of this method.
-      '''
-      doUpdate = self.force
-      last = self.settings.lastUpdate or 0
-      now = int(time())
-      lastTweetAge = now - last
-
-      # default to creating a tweet at *least* every 4 hours.
-      maxSpace = self.settings.GetOrDefault("maximumSpacing", 4 * 60 * 60)
-
-      if lastTweetAge > maxSpace:
-         # been too long since the last tweet. Make a new one for our fans!
-         doUpdate = True
-
-      elif random() < self.settings.tweetProbability:
-         # Make sure that we're not tweeting too frequently. Default is to enforce 
-         # a 1-hour gap between tweets (configurable using the 'minimumSpacing' key
-         # in the config file, providing a number of minutes we must remain silent.)
-         requiredSpace = self.settings.GetOrDefault("minimumSpacing",  60*60)
-
-         if lastTweetAge > requiredSpace:
-            # Our last tweet was a while ago, let's make another one.
-            doUpdate = True
-
-      return doUpdate
-
-
-
-   def CreateUpdateTweet(self):
-      ''' Override this method in your derived bot class. '''
-      pass
-
    def CreateUpdate(self):
       '''
          Called everytime the bot is Run(). 
-         If a random number is less than the probability that we should generate
-         a tweet (or if we're told to force one), we look into the lyrics database
-         and (we hope) append a status update to the list of tweets.
+
+         Checks to see if the bot thinks that it's ready to generate new output, 
+         and if so, calls CreateUpdateTweet to generate it.
 
       '''
 
@@ -226,27 +263,10 @@ class Nanobot(object):
          self.CreateUpdateTweet()
 
 
-   def HandleOneMention(self, mention):
-      ''' should be overridden by derived classes. Base version 
-      likes any tweet that mentions us.
-      '''
-      who = mention['user']['screen_name']
-      text = mention['text']
-      theId = mention['id_str']
-
-      # we favorite every mention that we see
-      if self.debug:
-         print "Faving tweet {0} by {1}:\n {2}".format(theId, who, text.encode("utf-8"))
-      else:
-         self.twitter.create_favorite(id=theId)
-
-
    def HandleMentions(self):
       '''
-         Get all the tweets that mention us since the last time we ran and process each
-         one.
-         Any time we're mentioned in someone's tweet, we favorite it. If they ask 
-         us a question, we reply to them.
+         Get all the tweets that mention us since the last time we ran and 
+         process each one.
       '''
       mentions = self.twitter.get_mentions_timeline(since_id=self.settings.lastMentionId)
       if mentions:
@@ -263,7 +283,7 @@ class Nanobot(object):
          ".stream". Handle any of those files that are present and delete them when
          we're done. 
 
-         See https://dev.twitter.com/streaming/overview/messages-types#user_stream_messsages
+         See https://dev.twitter.com/node/201
          for more information on the events that your bot can be sent.
 
          The event types that are listed at the time of writing are:
@@ -290,21 +310,6 @@ class Nanobot(object):
 
 
 
-   def PreRun(self):
-      ''' 
-         override in derived class to perform any actions that need
-         to happen before the body of the Run() method.
-      '''
-      pass
-
-   def PostRun(self):
-      ''' 
-         override in derived class to perform any actions that need
-         to happen after the body of the Run() method.
-      '''
-      pass
-
-
    def Run(self):
 
       # load the settings file.
@@ -319,14 +324,19 @@ class Nanobot(object):
 
       # create the Twython object that's going to communicate with the
       # twitter API.
-      s = self.settings
+      appKey = settings.appKey
+      appsecret = settings.appSecret
+      accesstoken = settings.accessToken
+      accessTokenSecret = settings.accessTokenSecret
       if self.stream:
-         self.twitter = NanobotStreamer(s.appKey, s.appSecret, s.accessToken, s.accessTokenSecret)
+         self.twitter = NanobotStreamer(appKey, appSecret, accessToken, accessTokenSecret)
          self.twitter.SetOutputPath(self.botPath)
       else:
-         self.twitter = Twython(s.appKey, s.appSecret, s.accessToken, s.accessTokenSecret)
+         self.twitter = Twython(appKey, appSecret, accessToken, accessTokenSecret)
 
 
+      # give the derived bot class a chance to do whatever it needs
+      # to do before we actually execute. 
       self.PreRun()
       if self.stream:
          if self.debug:
@@ -334,7 +344,7 @@ class Nanobot(object):
          try:
             # The call to user() will sit forever waiting for events on 
             # our user account to stream down. Those events will be handled 
-            # for us by the BotStreamer object that we created ab
+            # for us by the BotStreamer object that we created above
             self.twitter.user()
          except KeyboardInterrupt:
             # disconnect cleanly from the server.
@@ -349,7 +359,8 @@ class Nanobot(object):
          # get written out.
          self.settings.lastExecuted = str(datetime.now())
          self.settings.Write()
-         self.history.Write()
+
+      # ...and let the derived bot class clean up as it needs to.
       self.PostRun()
 
 
