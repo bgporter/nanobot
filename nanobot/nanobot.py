@@ -105,7 +105,8 @@ class Nanobot(object):
 
    def __init__(self, argDict=None):
       if not argDict:
-         argDict = { 'debug' : False, "force": False, 'stream': False, 'botPath' : "."}
+         argDict = { 'debug' : False, "force": False, 
+                     'stream': False, 'botPath' : "."}
       # update this object's internal dict with the dict of args that was passed
       # in so we can access those values as attributes.   
       self.__dict__.update(argDict)
