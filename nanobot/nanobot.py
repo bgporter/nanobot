@@ -311,12 +311,25 @@ class Nanobot(object):
 
 
    def Run(self):
+      '''
+         All the high-level logic of the bot is driven from here:
+         - load settings
+         - connect to twitter
+         - (let your derived bot class get set up)
+         - either:
+            - wait for events from the streaming API
+            - do bot stuff:
+               - maybe create one or more tweets
+               - handle any mentions
+               - handle any streaming API events that were saved
+               - send tweets out
+         - (let your derived bot class clean up)
+      '''
 
       # load the settings file.
       # If one doesn't exist, we create one that's populated with 
       # defaults, print a message to the console telling the user to
-      # edit the file with correct values, and
-      # exit.
+      # edit the file with correct values, and  exit.
       defaultSettings = kDefaultConfigDict.copy()
       defaultSettings.update(self.GetDefaultConfigOptions())
       self.settings = Settings(self.GetPath("{}.json".format(self.botName)), 
