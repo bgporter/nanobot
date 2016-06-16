@@ -1,5 +1,5 @@
 import os
-from setuptools import setuptools
+from setuptools import setup
 
 
 # Structure of this lifted from and thanks to 
@@ -16,12 +16,13 @@ setup(
     name = "Nanobot",
     version = "0.5.0",
     author = "Brett g Porter",
-    author_email = "bgp@bgporter.net"
-    description = "A tiny twitterbot framework."
+    author_email = "bgp@bgporter.net",
+    description = "A tiny twitterbot framework.",
     license = "MIT",
     keywords = "twitter twitterbot bot framework",
-    url = "https://github.com/bgporter/nanobot"
-    packages=['nanobot']
+    url = "https://github.com/bgporter/nanobot",
+    packages=['nanobot'],
+    install_requires = ['twython>=3.3.0'],
     long_description=read('README.rst'),
     classifiers=[
         "Development Status :: 4 - Beta",
