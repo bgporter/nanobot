@@ -84,7 +84,7 @@ class NanobotStreamer(TwythonStreamer):
       if 'event' in data:
          # Dump the data into a JSON file for the other cron-process to 
          # handle the next time it wakes up.
-         fileName = os.path.join(self.path, "{0}.{1}".format(
+         fileName = os.path.join(self.path, "{0}{1}".format(
             uuid4().hex, kStreamFileExtension))
          with open(fileName, "wt") as f:
             f.write(json.dumps(data).encode("utf-8"))
@@ -293,7 +293,7 @@ class Nanobot(object):
          list_member_added, list_member_removed, list_user_subscribed,
          list_user_unsubscribed, quoted_tweet, user_update. 
       '''
-      events = glob(self.GetPath("*.{0}".format(kStreamFileExtension)))
+      events = glob(self.GetPath("*{0}".format(kStreamFileExtension)))
       for fileName in events:
          with open(fileName, "rt") as f:
             data = json.loads(f.read().decode("utf-8"))
@@ -341,7 +341,7 @@ class Nanobot(object):
       # create the Twython object that's going to communicate with the
       # twitter API.
       appKey = self.settings.appKey
-      appsecret = self.settings.appSecret
+      appSecret = self.settings.appSecret
       accesstoken = self.settings.accessToken
       accessTokenSecret = self.settings.accessTokenSecret
       if self.stream:
