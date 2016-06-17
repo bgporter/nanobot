@@ -30,6 +30,9 @@ from nanobot.nanobot import GetBotArguments
 
 from datetime import datetime
 
+def NowString(now):
+   return now.strftime("It's %-I:%M %p on %A %B %d, %Y") 
+
 class Tockbot(Nanobot):
    def __init__(self, argDict=None):
       super(Tockbot, self).__init__(argDict)
@@ -51,7 +54,8 @@ class Tockbot(Nanobot):
       chimeCount = now.hour % 12 or 12
 
       # create the message to tweet, repeating the chime
-      msg = "\n".join(["BONG"] * chimeCount)
+      msg = "{0}\n\n{1}".format("\n".join(["BONG"] * chimeCount), 
+         NowString(now))
       # add the message to the end of the tweets list (rem)
       self.tweets.append({'status': msg})
       self.Log("Tweet", ["{} o'clock".format(chimeCount)])
@@ -74,8 +78,7 @@ class Tockbot(Nanobot):
       if 'tick' in text.lower():
          # reply to them with the current time.
          now = datetime.now()
-         nowStr = now.strftime("It's %-I:%M %p on %A %B %d, %Y")      
-         replyMsg = "@{0} {1}".format(who, nowStr)
+         replyMsg = "@{0} {1}".format(who, NowString(now))
          if self.debug:
             print "REPLY: {}".format(replyMsg)
          else:
@@ -94,7 +97,6 @@ class Tockbot(Nanobot):
             self.twitter.create_favorite(id=tweetId)
          except TwythonError as e:
             self.Log("EXCEPTION", str(e))      
-
 
 if __name__ == "__main__":
    Tockbot.CreateAndRun(GetBotArguments())
