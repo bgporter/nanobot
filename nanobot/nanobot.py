@@ -260,7 +260,7 @@ class Nanobot(object):
 
       '''
 
-      if self.IsReadyForUpdate():
+      if self.force or self.IsReadyForUpdate():
          self.CreateUpdateTweet()
 
 
