@@ -44,14 +44,13 @@ class Tockbot(Nanobot):
          or if the user is forcing us to tweet. 
       '''
 
-      now = datetime.now()
-      return (0 == now.minute) or self.force
+      return 0 == datetime.now().minute
 
    def CreateUpdateTweet(self):
       ''' Chime the clock! '''
       now = datetime.now()
       # figure out how many times to chime; 1x per hour.
-      chimeCount = now.hour % 12 or 12
+      chimeCount = (now.hour % 12) or 12
 
       # create the message to tweet, repeating the chime
       msg = "{0}\n\n{1}".format("\n".join(["BONG"] * chimeCount), 
@@ -77,8 +76,7 @@ class Tockbot(Nanobot):
 
       if 'tick' in text.lower():
          # reply to them with the current time.
-         now = datetime.now()
-         replyMsg = "@{0} {1}".format(who, NowString(now))
+         replyMsg = "@{0} {1}".format(who, NowString(datetime.now()))
          if self.debug:
             print "REPLY: {}".format(replyMsg)
          else:
