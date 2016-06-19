@@ -342,7 +342,7 @@ class Nanobot(object):
       # twitter API.
       appKey = self.settings.appKey
       appSecret = self.settings.appSecret
-      accesstoken = self.settings.accessToken
+      accessToken = self.settings.accessToken
       accessTokenSecret = self.settings.accessTokenSecret
       if self.stream:
          self.twitter = NanobotStreamer(appKey, appSecret, accessToken, accessTokenSecret)

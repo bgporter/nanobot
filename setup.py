@@ -14,7 +14,7 @@ def read(fname):
 
 setup(
     name = "Nanobot",
-    version = "0.5.0",
+    version = "0.5.1",
     author = "Brett g Porter",
     author_email = "bgp@bgporter.net",
     description = "A tiny twitterbot framework.",
